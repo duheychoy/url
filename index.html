@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https:; connect-src 'self' http://localhost:3000;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>mus.hk</title>
+    <style>
+        /* 保留原來的樣式，不變 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #FFFFFF;
+            background-color: #000066;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+        }
+        
+        a {
+            color: #FFFFFF;
+            text-decoration: none;
+            transition: text-decoration 0.2s ease;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        .site-title {
+            text-align: center;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 2rem;
+            line-height: 1.2;
+        }
+        
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            table-layout: fixed;
+        }
+        
+        .content-table th,
+        .content-table td {
+            padding: 12px 10px;
+            border: 1px solid #FFFFFF;
+            word-wrap: break-word;
+        }
+
+        .content-table th {
+            background-color: #000080;
+            font-weight: bold;
+            text-align: left;
+        }
+        
+        .section-header {
+            background-color: #000068;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        form {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #000070;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #000;
+            font-size: 1rem;
+        }
+
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0052a3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .content-table th,
+            .content-table td {
+                padding: 8px 6px;
+                font-size: 0.9rem;
+            }
+            
+            form {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="site-title">
+            <span style="color: #66FFFF">g</span>
+            <span style="color: #FFFF00">i</span>
+            <span style="color: #FF0000">t</span>
+            <span style="color: #FFFFFF">h</span>
+            <span style="color: #FF6633">u</span>
+            <span style="color: #00CC00">b</span>
+        </h1>
+
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>分類</th>
+                    <th>網址</th>
+                    <th>說明</th>
+                </tr>
+            </thead>
+            <tbody id="urlTableBody">
+                <!-- 從後端加載數據並渲染 -->
+            </tbody>
+        </table>
+
+        <h2>新增網址</h2>
+        <form id="addUrlForm">
+            <div class="form-group">
+                <label for="category">分類:</label>
+                <input type="text" id="category" name="category" required>
+            </div>
+            <div class="form-group">
+                <label for="url">網址:</label>
+                <input type="url" id="url" name="url" required placeholder="例如: https://github.com">
+            </div>
+            <div class="form-group">
+                <label for="description">說明 (可選，若為網址則自動建立連結):</label>
+                <input type="text" id="description" name="description" placeholder="例如: 個人程式碼倉庫">
+            </div>
+            <input type="submit" value="添加">
+        </form>
+    </div>
+
+    <script>
+        // 後端 API 基礎地址
+        const API_BASE = 'http://localhost:3000/api';
+
+        // 1. 從後端加載數據並渲染表格
+        async function loadAndRenderUrls() {
+            try {
+                const response = await fetch(`${API_BASE}/urls`);
+                if (!response.ok) throw new Error('加載數據失敗');
+                
+                const urlList = await response.json();
+                const tableBody = document.getElementById('urlTableBody');
+                tableBody.innerHTML = ''; // 清空表格
+
+                const renderedCategories = new Set();
+                urlList.forEach(item => {
+                    const newRow = tableBody.insertRow();
+                    const categoryCell = newRow.insertCell(0);
+                    const urlCell = newRow.insertCell(1);
+                    const descriptionCell = newRow.insertCell(2);
+
+                    // 判斷是否為新分類
+                    if (!renderedCategories.has(item.category)) {
+                        categoryCell.classList.add('section-header');
+                        renderedCategories.add(item.category);
+                    }
+                    categoryCell.textContent = item.category;
+
+                    // 渲染網址
+                    const urlLink = document.createElement('a');
+                    urlLink.href = item.url;
+                    urlLink.rel = 'noopener noreferrer';
+                    urlLink.textContent = item.url.length > 50 ? item.url.substring(0, 50) + '...' : item.url;
+                    urlCell.appendChild(urlLink);
+
+                    // 渲染說明
+                    if (item.description) {
+                        let descElement;
+                        const urlPattern = /^https?:\/\/.+$/i;
+                        if (urlPattern.test(item.description)) {
+                            descElement = document.createElement('a');
+                            descElement.href = item.description;
+                            descElement.rel = 'noopener noreferrer';
+                            descElement.textContent = item.description.length > 50 ? item.description.substring(0, 50) + '...' : item.description;
+                        } else {
+                            descElement = document.createTextNode(item.description);
+                        }
+                        descriptionCell.appendChild(descElement);
+                    }
+                });
+            } catch (err) {
+                alert('加載數據出錯：' + err.message);
+                console.error(err);
+            }
+        }
+
+        // 2. 表單提交：發送數據到後端
+        async function submitUrlToServer(event) {
+            event.preventDefault();
+
+            // 獲取表單數據
+            const category = document.getElementById('category').value.trim();
+            const url = document.getElementById('url').value.trim();
+            const description = document.getElementById('description').value.trim();
+
+            // 基本驗證
+            if (!category || !url) {
+                alert('請填寫必填欄位！');
+                return;
+            }
+
+            try {
+                // 發送 POST 請求到後端
+                const response = await fetch(`${API_BASE}/urls`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ category, url, description })
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || '添加失敗');
+
+                alert('添加成功！');
+                // 重置表單 + 重新加載表格
+                document.getElementById('addUrlForm').reset();
+                loadAndRenderUrls();
+            } catch (err) {
+                alert('添加出錯：' + err.message);
+                console.error(err);
+            }
+        }
+
+        // 頁面加載完成後初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加載並渲染數據
+            loadAndRenderUrls();
+            // 綁定表單提交事件
+            document.getElementById('addUrlForm').addEventListener('submit', submitUrlToServer);
+        });
+    </script>
+</body>
+</html>
