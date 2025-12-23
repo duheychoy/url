@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https:; connect-src 'self' https:;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>mus.hk</title>
+    <style>
+        /* 全域重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #FFFFFF;
+            background-color: #000066;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+        }
+        
+        a {
+            color: #FFFFFF;
+            text-decoration: none;
+            transition: text-decoration 0.2s ease;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        .site-title {
+            text-align: center;
+            font-size: clamp(1.8rem, 5vw, 2.5rem); /* 響應式字體 */
+            margin-bottom: 2rem;
+            line-height: 1.2;
+        }
+        
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            table-layout: fixed; /* 固定表格佈局，防止內容撐破 */
+        }
+        
+        .content-table th,
+        .content-table td {
+            padding: 12px 10px;
+            border: 1px solid #FFFFFF;
+            word-wrap: break-word; /* 長文字自動換行 */
+        }
+
+        /* 表格標題列樣式增強 */
+        .content-table th {
+            background-color: #000080;
+            font-weight: bold;
+            text-align: left;
+        }
+        
+        .section-header {
+            background-color: #000068;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* 表單樣式優化 */
+        form {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #000070;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #000;
+            font-size: 1rem;
+        }
+
+        input[type="submit"] {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0052a3;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .content-table th,
+            .content-table td {
+                padding: 8px 6px;
+                font-size: 0.9rem;
+            }
+            
+            form {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="site-title">
+            <span style="color: #66FFFF">g</span>
+            <span style="color: #FFFF00">i</span>
+            <span style="color: #FF0000">t</span>
+            <span style="color: #FFFFFF">h</span>
+            <span style="color: #FF6633">u</span>
+            <span style="color: #00CC00">b</span>
+        </h1>
+
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>分類</th>
+                    <th>網址</th>
+                    <th>說明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="section-header">github</td>
+                    <td><a href="https://duheychoy.github.io/" rel="noopener noreferrer">github網頁</a></td>
+                    <td><a href="https://github.com/duheychoy" rel="noopener noreferrer">editor</a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>新增網址</h2>
+        <form id="addUrlForm">
+            <div class="form-group">
+                <label for="category">分類:</label>
+                <input type="text" id="category" name="category" required>
+            </div>
+            <div class="form-group">
+                <label for="url">網址:</label>
+                <input type="url" id="url" name="url" required placeholder="例如: https://github.com">
+            </div>
+            <div class="form-group">
+                <label for="description">說明 (可選，若為網址則自動建立連結):</label>
+                <input type="text" id="description" name="description" placeholder="例如: 個人程式碼倉庫">
+            </div>
+            <input type="submit" value="添加">
+        </form>
+    </div>
+
+    <script>
+        // 確保DOM載入完成後執行
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('addUrlForm');
+            if (!form) return;
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                // 获取表單值並去除前後空格
+                const category = document.getElementById('category').value.trim();
+                const url = document.getElementById('url').value.trim();
+                const description = document.getElementById('description').value.trim();
+
+                // 基本驗證
+                if (!category || !url) {
+                    alert('請填寫必填欄位！');
+                    return;
+                }
+
+                const tableBody = document.querySelector('.content-table tbody');
+                if (!tableBody) return;
+
+                // 建立新行
+                const newRow = tableBody.insertRow();
+                const categoryCell = newRow.insertCell(0);
+                const urlCell = newRow.insertCell(1);
+                const descriptionCell = newRow.insertCell(2);
+
+                // 判斷是否需要添加section-header類
+                const rows = tableBody.rows;
+                let isNewCategory = true;
+                
+                // 檢查前一行是否為相同分類
+                for (let i = 0; i < rows.length - 1; i++) {
+                    if (rows[i].cells[0].textContent === category) {
+                        isNewCategory = false;
+                        break;
+                    }
+                }
+
+                if (isNewCategory) {
+                    categoryCell.classList.add('section-header');
+                }
+                categoryCell.textContent = category;
+
+                // 建立網址連結
+                const urlLink = document.createElement('a');
+                urlLink.href = url;
+                urlLink.rel = 'noopener noreferrer';
+                urlLink.textContent = url.length > 50 ? url.substring(0, 50) + '...' : url; // 長網址截斷
+                urlCell.appendChild(urlLink);
+
+                // 處理說明欄位
+                if (description) {
+                    let descElement;
+                    // 判斷是否為網址
+                    const urlPattern = /^https?:\/\/.+$/i;
+                    if (urlPattern.test(description)) {
+                        descElement = document.createElement('a');
+                        descElement.href = description;
+                        descElement.rel = 'noopener noreferrer';
+                        descElement.textContent = description.length > 50 ? description.substring(0, 50) + '...' : description;
+                    } else {
+                        descElement = document.createTextNode(description);
+                    }
+                    descriptionCell.appendChild(descElement);
+                }
+
+                // 重置表單
+                form.reset();
+            });
+        });
+    </script>
+</body>
+</html>
